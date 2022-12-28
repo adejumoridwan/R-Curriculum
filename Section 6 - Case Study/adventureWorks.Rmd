@@ -1,0 +1,187 @@
+---
+title: 'Case Study: Adventure Works'
+author: "Adejumo Ridwan Suleiman"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Install Packages
+```{r}
+#install remotes
+#install.packages("remotes")
+
+#install and load adventure works database
+remotes::install_github("adejumoridwan/adventureWorks")
+library(adventureWorks)
+
+#install tidyverse
+library(tidyverse)
+
+```
+
+# Data in the database
+- sales
+- customers
+- products
+- budget
+- calendar
+- territory
+
+# Total Sales Made in each product sub category
+```{r}
+inner_join(x = sales, 
+           y = products,
+           by = "ProductKey") |> 
+  group_by(Category,SubCategory) |> 
+  summarize(Total_Sales = round(sum(SalesAmount))) |> 
+  arrange(desc(Total_Sales))
+
+```
+
+# Profit Margin made in each Product category
+```{r}
+inner_join(x = sales, 
+           y = products,
+           by = "ProductKey") |> 
+  mutate(Profit_Margin = 
+           (SalesAmount - ProductStandardCost)/sum(SalesAmount)*100)|> 
+  group_by(Category,SubCategory) |> 
+  summarize(Total_Profit_Margin = sum(Profit_Margin)) |> 
+  arrange(desc(Total_Profit_Margin)) |> 
+  ggplot(aes(x = Total_Profit_Margin,
+             y = reorder(SubCategory, Total_Profit_Margin),
+             fill = Category)) +
+  geom_col() +
+  labs(x = "Profit Margin",
+       y = "Products Sub Category",
+       title = "Profit Margin for each Product Subcategory")
+```
+
+# Profit Margin of Sales over time
+```{r}
+sales |> 
+  mutate(Profit_Margin = 
+           (SalesAmount - ProductStandardCost)/sum(SalesAmount)*100,
+         OrderDate = lubridate::dmy(OrderDate)) |> 
+  group_by(OrderDate) |> 
+  summarize(Profit_Margin = sum(Profit_Margin)) |> 
+  ggplot(aes(x = OrderDate,
+             y = Profit_Margin)) +
+  geom_line() +
+  labs(x = "Order Date",
+       y = "Profit Margin",
+       title = "Profit Margin of Sales over time")
+```
+
+# What happened in 2019
+```{r}
+sales |> 
+  mutate(Profit_Margin = 
+           (SalesAmount - ProductStandardCost)/sum(SalesAmount)*100,
+         OrderDate = lubridate::dmy(OrderDate)) |> 
+  group_by(OrderDate) |> 
+  summarize(Profit_Margin = sum(Profit_Margin)) |> 
+  filter(OrderDate >= "2019-01-01") |> 
+  ggplot(aes(x = OrderDate,
+             y = Profit_Margin)) +
+  geom_line() +
+  labs(x = "Order Date",
+       y = "Profit Margin",
+       title = "Profit Margin of Sales over time")
+```
+
+# What happened after July
+```{r}
+inner_join(x = sales, 
+           y = products,
+           by = "ProductKey") |>  
+  mutate(Profit_Margin = 
+           (SalesAmount - ProductStandardCost)/sum(SalesAmount)*100,
+         OrderDate = lubridate::dmy(OrderDate)) |> 
+  filter(OrderDate >= "2019-07-01") |> 
+  group_by(Category) |> 
+  summarize(Profit_Margin = sum(Profit_Margin))
+```
+So products belonging to bike categories were not sold, no wonder sales dropped
+
+# Customers where most profit were made from
+```{r}
+inner_join(x = sales, 
+           y = customers,
+           by = "CustomerKey") |> 
+  mutate(Profit_Margin = 
+           (SalesAmount - ProductStandardCost)/sum(SalesAmount)*100) |> 
+  group_by(Occupation, MaritalStatus, Gender) |> 
+  summarize(Total_Profit = sum(Profit_Margin)) |>
+  arrange(desc(Total_Profit))
+```
+
+# Exercises
+
+# Question 1
+Which sub category was sales made most from for single female.  
+1. Touring Bikes
+2. Mountain Bikes
+3. Helmets
+4. None of the Above - Ans
+```{r}
+inner_join(x = sales, 
+           y = customers,
+           by = "CustomerKey") |> 
+  inner_join(y = products,
+              by = "ProductKey") |> 
+  filter(Occupation == "Professional",
+         MaritalStatus == "S",
+         Gender == "F") |> 
+  group_by(Category, SubCategory) |> 
+  summarize(Total_Sales = sum(ExtendedAmount)) |> 
+  arrange(desc(Total_Sales))
+```
+
+## Question 2
+Calculate the total tax on the product category Bikes.  
+1. 2,265,451.62 - Ans
+2. 56,060.80
+3. 27,181.81
+4. None of the Above
+
+```{r}
+inner_join(x = sales, 
+           y = products,
+           by = "ProductKey") |> 
+  group_by(Category) |> 
+  summarize(Total_Tax = sum(TaxAmt)) |> 
+  arrange(desc(Total_Tax))
+```
+
+## Question 3
+What is the total profit on bikes made from customers who are Professionals.
+Note: Profit = Selling Price - Cost Price.  
+1. 3,916,901  
+2. 3,912,902
+3. 3,716,902
+4. None of the Above - Ans
+```{r}
+inner_join(x = sales, 
+           y = customers,
+           by = "CustomerKey") |> 
+  inner_join(y = products,
+              by = "ProductKey") |>
+  mutate(Profit = SalesAmount - ProductStandardCost) |> 
+  filter(Occupation == "Professional") |> 
+  group_by(Category) |> 
+  summarize(Profit = sum(Profit)) |> 
+  filter(Category == "Bikes")
+```
+```{r}
+library(ggplot2)
+diamonds |> 
+  ggplot(mapping = aes(x = cut)) + 
+  geom_bar() +
+  labs(title = "My Plot")
+```
+
+
+

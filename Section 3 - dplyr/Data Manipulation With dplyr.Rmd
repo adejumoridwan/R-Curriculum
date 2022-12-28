@@ -1,0 +1,239 @@
+---
+title: "Data Manipulation With Dplyr"
+author: "Adejumo Ridwan Suleiman"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Installing dplyr
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+```
+
+
+# Installing nycflights13
+This data is an RDMS: a Relational Database Management System, it is made up of more than one table of data which are related to each other.
+- flights
+- airlines
+- airport
+- planes
+- weather
+
+```{r}
+#install.packages("nycflights13)
+library(nycflights13)
+```
+
+
+## Flights (Main Data)
+Details of all flights in the year 2013
+```{r}
+head(flights)
+```
+
+
+## Airlines Names
+```{r}
+head(airlines)
+```
+
+## Airport Metadata
+```{r}
+head(airports)
+```
+
+## Planes Metadata
+```{r}
+head(planes)
+```
+
+## Weather (hourly)
+```{r}
+head(weather)
+?weather
+```
+
+#  Grouping and Summarizing
+
+```{r}
+month_delay <- flights |> 
+  group_by(month) |> 
+  summarize(avg_dep_delay = mean(dep_delay, na.rm = TRUE),
+            avg_arr_delay = mean(arr_delay, na.rm = TRUE))
+```
+
+```{r}
+carrier_delay <- flights |> 
+  group_by(carrier) |> 
+  summarize(avg_carr_dep_delay = mean(dep_delay, na.rm = TRUE),
+            avg_carr_arr_delay = mean(arr_delay, na.rm = TRUE))
+```
+
+# Arranging
+```{r}
+carrier_delay |> 
+  arrange(desc(avg_carr_dep_delay))
+```
+
+# Filtering
+```{r}
+flights |> 
+  filter(month == 1 & dep_delay < 0 & arr_delay < 0)
+
+carrier_delay
+```
+
+# Selecting
+```{r}
+flights |> 
+  select(!(hour:time_hour))
+```
+
+# Creating Variables
+```{r}
+carrier_speed <- flights |> 
+  mutate(speed = distance/(air_time/60)) |> 
+  select(carrier, speed) |> 
+  group_by(carrier) |> 
+  summarize(avg_speed = mean(speed, na.rm = TRUE)) |> 
+  arrange(desc(avg_speed))
+```
+
+
+```{r}
+flights |> 
+  mutate(speed = distance/(air_time/60), .keep = "all")
+```
+
+
+# Renaming
+```{r}
+flights |> 
+  rename(destination = dest)
+```
+
+# Mutating Joins
+```{r}
+top5_carrier_speed <- carrier_speed |> 
+  head(5)
+top5_carrier_speed
+```
+
+```{r}
+full_join(x = top5_carrier_speed, 
+           y = airlines, 
+           by = "carrier")
+
+inner_join(x = carrier_delay, 
+           y = airlines, 
+           by = "carrier") |> 
+  select(carrier, name, avg_carr_dep_delay, avg_carr_arr_delay) |> 
+  arrange(avg_carr_dep_delay) |> 
+  head(5)
+```
+
+```{r}
+inner_join(x = top5_carrier_speed, y = airlines, by = "carrier")
+```
+
+# Filtering Join
+```{r}
+anti_join(x = airlines,
+          y = top5_carrier_speed,
+          by = "carrier")
+```
+
+# Exercises and Solutions
+
+## Question 1
+Using the flights data set, which carrier have the highest average speed.
+Note: Remember to set na.rm = TRUE when calculating the average speed.
+1. Hawaiian Airlines Inc. - ANSWER
+2. Virgin America
+3. Alaska Airlines Inc.
+4. Frontier Airlines Inc.
+5. United Air Lines Inc.
+```{r}
+avg_speed_table <- flights |> 
+  mutate(speed = distance/air_time*60) |> 
+  group_by(carrier) |> 
+  summarize(avg_speed = mean(speed, na.rm = TRUE)) |> 
+  arrange(desc(avg_speed))
+
+avg_speed_table
+
+inner_join(x = avg_speed_table, 
+           y = airlines, 
+           by = "carrier")
+```
+
+## Question 2
+How many flights in the month of December had no departure and  arrrival delay.
+1.39
+2.37
+3.32
+4.31 ANSWER
+5.34
+```{r}
+flights |> 
+  filter(arr_delay == 0 & dep_delay == 0 & month == 12)
+```
+
+## Question 3
+What is the distance covered in Kilometers for the flight with id number 4646 and tailnum N273WN. Note: A mile is 1.6 Kilometers
+1. 115.625 Kilometers
+2. 296 Kilometers - ANSWER
+3. 290 Kilometers
+4. 78 Kilometers
+5. 234 Kilometers
+```{r}
+flight_4646_N273WN <- flights |> 
+  filter(flight == 4646 & tailnum == "N273WN") |> 
+  mutate(dist_kil = distance*1.6)
+
+flight_4646_N273WN |> 
+  select(dist_kil)
+```
+
+## Question 4
+The manufacturer of the plane in Question 3 is:
+1. SIKORSKY
+2. EMBRAER
+3. AIRBUS
+4. BOEING - ANSWER
+5. GULFSTREAM AEROSPACE
+```{r}
+inner_join(x = flight_4646_N273WN,
+           y = planes, 
+           by = "tailnum") |> 
+  select(manufacturer)
+```
+## Question 5
+What is the tailnum of the fastest Air Plane departing New York.
+1. N819AW
+2. N382HA
+3. N654UA
+4. N228UA - ANSWER
+5. N315AS
+
+```{r}
+plane_speed <- flights |> 
+  mutate(speed = distance/(air_time/60)) |> 
+  select(tailnum, speed) |> 
+  group_by(tailnum) |> 
+  summarize(avg_speed = mean(speed, na.rm = TRUE)) |> 
+  arrange(desc(avg_speed)) |> 
+  head(5)
+
+plane_speed
+```
+
+```{r}
+inner_join(x = plane_speed,
+           y = planes,
+           by = "tailnum")
+```
+

@@ -1,0 +1,92 @@
+---
+title: "Date Tidying with tidyr"
+author: "Adejumo Ridwan Suleiman"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Installing and loading tidyr
+```{r}
+#install.package("tidyr)
+library(tidyr)
+```
+
+# Reshaping with Pivot longer
+```{r}
+head(relig_income)
+```
+
+
+```{r}
+relig_income %>%
+  pivot_longer(!religion, 
+               names_to = "income", 
+               values_to = "count")
+```
+
+# Reshaping with Pivot wider
+```{r}
+head(us_rent_income)
+```
+
+```{r}
+us_rent_income %>%
+  pivot_wider(
+    names_from = variable,
+    values_from = estimate,
+    values_fill = 0
+  )
+```
+
+#Separating
+```{r}
+head(table3)
+```
+
+```{r}
+table3 %>% 
+  separate(col = rate, 
+           into = c("cases", "population"),
+           sep = "/")
+```
+
+
+#Uniting
+```{r}
+head(table5)
+```
+
+
+```{r}
+table5 %>% 
+  unite(col = new, 
+        century, year)
+```
+
+# Exercises
+
+## Question 1
+Which of the follwing is an argument in the function `pivot_longer`?  
+1. names_to - ANS  
+2. value_to  
+3. names_from  
+4. values_from  
+5. name_to  
+
+## Question 2
+Which of the following is an argument in the function `pivot_wider`?    
+1. names_to  
+2. value_to  
+3. names_from - ANS  
+4. value_from  
+5. name_to   
+
+## Qustion 3
+Which of the following arguments will fill missing values after using a `pivot_wider` on a data set?  
+1. value_fil  
+2. values_fill - ANS  
+3. fill  
+4. fill_na  
+5. na_fill  

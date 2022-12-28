@@ -1,0 +1,180 @@
+---
+title: "Data Visualization With ggplot2"
+author: "Adejumo Ridwan Suleiman"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Installing and Loading ggplot2
+```{r}
+#install.packages("ggplot2")
+library(ggplot2)
+```
+
+# Diamonds dataset
+```{r}
+head(diamonds)
+```
+# Economics dataset
+```{r}
+head(economics)
+```
+
+# Barplots
+
+## Vertical Bar Plot
+```{r}
+# Most occurring diamonds (change fill with "fill = ", change line colour with "colour = ")
+diamonds |> 
+  ggplot(mapping = aes(x = cut)) +
+  geom_bar()
+```
+
+## Horizontal Bar Plot
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(y = cut)) +
+  geom_bar()
+```
+
+## Stacked BarPlot
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(x = cut, fill = clarity)) +
+  geom_bar()
+```
+## Grouped Barplot
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge")
+```
+
+# Boxplots
+
+## Comparing diamond cut and price
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(x = cut, y = price, colour = clarity)) +
+  geom_boxplot()
+```
+
+# Histogram
+```{r}
+#Check for the distribution of diamond carat
+diamonds |> 
+  ggplot(aes(x = carat)) +
+  geom_histogram()
+```
+
+# Scatter Plot
+```{r}
+# Check for the relationship between diamond price and carat
+diamonds |> 
+  ggplot(aes(x = price, y = carat)) +
+  geom_point()
+
+cor(diamonds$cut, diamonds$color, method = "spearman")
+```
+
+# Line Graph
+```{r}
+economics |> 
+  ggplot(aes(x = date, y = pop)) +
+  geom_line()
+```
+
+
+# Labelling
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(x = cut, y = price, colour = cut)) +
+  geom_boxplot() +
+  labs(x = "Cut", y = "Price", title = "Diamond Cut against Price", )
+```
+
+# Facetting
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(y = cut, fill = cut)) +
+  geom_bar() +
+  facet_grid(color ~ .)
+```
+
+
+# Exercises and Solutions
+
+## Question 1
+Using a boxplot to visualize diamond cut against depth percentage. Which diamond cut have the highest median depth percentage.
+1. Fair - ANSWER
+2. Good
+3. Very Good
+4. Premium
+5. Ideal
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(x = cut, y = depth, color = cut)) +
+  geom_boxplot()
+```
+
+## Question 2
+Visualize using a line graph the change in United States Personal consumption expenditures in the economics data. In which year did the United States have the low personal consumption expenditure.
+1. 1967 - ANSWER
+2. 2000
+3. 1999
+4. 2015
+5. 1990
+
+```{r}
+economics |> 
+  ggplot(mapping = aes(x = date, y = pce)) +
+  geom_line()
+```
+
+## Question 3
+Using a suitable bin width, visualize the distribution of diamond carat in the diamonds data set. In which range of carat value do most diamonds fall in.
+1. 0.5 - 1.5 - ANSWER
+2. 4.0 - 5.0
+3. 2.0 - 3.5
+4. 0.0 - 0.5
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(x = carat)) +
+  geom_histogram()
+```
+
+# Question 4
+Which of the following can we use to plot a numerical variable against a numerical variable
+1. Box Plot
+2. Scatter Plot - ANSWER
+3. Bar Plot
+4. Line Plot
+5. None of the Above
+
+# Question 5
+Which of the following codes in the options, will give the graph below.
+SOLUTION - ALL THE GIVEN CODES WILL GIVE THE SAME GRAPH
+```{r}
+diamonds |> 
+  ggplot(mapping = aes(x = cut)) +
+  geom_bar()
+```
+
+```{r}
+diamonds |> 
+  ggplot() +
+  geom_bar(mapping = aes(x = cut))
+```
+
+```{r}
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
+```
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = cut)) +
+  geom_bar()
+```
+
+
